@@ -8,18 +8,12 @@
             var magnitude = parseFloat(document.getElementById('magnitude').value);
             var direction = parseFloat(document.getElementById('direction').value);
 
-            // Call the Python function using an AJAX request
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/calculate", true);
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    var result = JSON.parse(xhr.responseText);
-                    // Update the HTML to show the result
-                    document.getElementById('result').innerHTML = "Horizontal Component: " + result.horizontal + "<br>Vertical Component: " + result.vertical;
-                }
-            };
-            xhr.send(JSON.stringify({ magnitude: magnitude, direction: direction }));
+            // Calculate horizontal and vertical components
+            var horizontal = magnitude * Math.cos(direction * Math.PI / 180);
+            var vertical = magnitude * Math.sin(direction * Math.PI / 180);
+
+            // Update the HTML to display the result
+            document.getElementById('result').innerHTML = "Horizontal Component: " + horizontal + "<br>Vertical Component: " + vertical;
         }
     </script>
 </head>
