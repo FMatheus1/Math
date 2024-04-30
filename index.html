@@ -1,60 +1,37 @@
-from flask import Flask, render_template, request
-import math
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vector Calculator</title>
+    <script>
+        function calculateResult() {
+            // Get input values from the form
+            var magnitude = parseFloat(document.getElementById('magnitude').value);
+            var direction = parseFloat(document.getElementById('direction').value);
 
-app = Flask(__name__)
-
-def many(magnitudes, directions):
-    # Convert directions to radians
-    directions_rad = [math.radians(d) for d in directions]
-
-    # Calculate x and y components of each vector
-    x_components = [m * math.cos(d) for m, d in zip(magnitudes, directions_rad)]
-    y_components = [m * math.sin(d) for m, d in zip(magnitudes, directions_rad)]
-
-    # Calculate the sum of x and y components
-    x_sum = sum(x_components)
-    y_sum = sum(y_components)
-
-    # Calculate the resultant magnitude
-    magnitude = math.sqrt(x_sum**2 + y_sum**2)
-
-    # Calculate the resultant direction
-    direction = math.degrees(math.atan2(y_sum, x_sum))
-
-    return magnitude, direction
-
-def single(magnitude, direction):
-    # Function to convert degrees to radians
-    def deg_to_rad(degrees):
-        return math.radians(degrees)
-
-    # Function to convert polar coordinates (magnitude, direction) to Cartesian coordinates (x, y)
-    def polar_to_cartesian(magnitude, direction_degrees):
-        direction_rad = deg_to_rad(direction_degrees)
-        x = magnitude * math.cos(direction_rad)
-        y = magnitude * math.sin(direction_rad)
-        return x, y
-
-    # Calculate horizontal and vertical components
-    horizontal, vertical = polar_to_cartesian(magnitude, direction)
-
-    return horizontal, vertical
-
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        if request.form["action"] == "many":
-            n = int(request.form["n"])
-            magnitudes = [float(request.form[f"magnitude_{i+1}"]) for i in range(n)]
-            directions = [float(request.form[f"direction_{i+1}"]) for i in range(n)]
-            magnitude, direction = many(magnitudes, directions)
-            return render_template("result.html", magnitude=magnitude, direction=direction)
-        elif request.form["action"] == "single":
-            magnitude = float(request.form["magnitude"])
-            direction = float(request.form["direction"])
-            horizontal, vertical = single(magnitude, direction)
-            return render_template("result_single.html", horizontal=horizontal, vertical=vertical)
-    return render_template("index.html")
-
-if __name__ == "__main__":
-    app.run(debug=True)
+            // Call the Python function using an AJAX request
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/calculate", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var result = JSON.parse(xhr.responseText);
+                    // Update the HTML to show the result
+                    document.getElementById('result').innerHTML = "Horizontal Component: " + result.horizontal + "<br>Vertical Component: " + result.vertical;
+                }
+            };
+            xhr.send(JSON.stringify({ magnitude: magnitude, direction: direction }));
+        }
+    </script>
+</head>
+<body>
+    <h1>Vector Calculator</h1>
+    <form>
+        <label for="magnitude">Magnitude:</label>
+        <input type="number" id="magnitude" name="magnitude" step="0.01" required><br><br>
+        <label for="direction">Direction (degrees):</label>
+        <input type="number" id="direction" name="direction" step="0.01" required><br><br>
+        <input type="button" value="Calculate Result" onclick="calculateResult()">
+    </form>
+    <div id="result"></div>
+</body>
+</html>
